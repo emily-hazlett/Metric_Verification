@@ -8,6 +8,8 @@
 % dB also included. tuning and monotonicity/ threshold will be analyzed
 % separately if included.
 
+ZScount = 0;
+
 % Stimuli presented in different stimulus sets
 bbnAll = {'BBN_30'};
 toneAll = {'Hz_15000'; 'Hz_20000'; 'Hz_25000'; 'Hz_30000'; 'Hz_35000'; 'Hz_40000'};
@@ -20,9 +22,9 @@ windowResponse = [1, 200]; % window to calc early response prestim = 100 poststi
 slide = 5; %ms of sliding window
 binSize = 20; %ms per bin for smaller psth
 
-thresholdSMI = 0.15; % Cut off for being responsive according to SMI
+thresholdSMI = 0.05; % Cut off for being responsive according to SMI
 thresholdRMI = 0.1; % Cut off for being responsive according to RMI
-thresholdZS = 1.5; % Cut off for being responsive according to Z score
+thresholdZS = 2; % Cut off for being responsive according to Z score (1.96 = 95% CI)
 
 %% Recalculate windows based on bin size
 windowResponse = windowResponse + 100;
@@ -185,7 +187,8 @@ for i =  1:size(dataset1,1)
                     meanslideRMI{populationcount, 2} = stim{iii};
                     
                     %% Z score
-                    referencepopZS = psthBinSlideHzM; %(windowBGSlide(1):windowBGSlide(2),:);
+                    %                     referencepopZS = psthBinSlideHzM; %(windowBGSlide(1):windowBGSlide(2),:);
+                    referencepopZS = psthBinSlideHzM(windowBGSlide(1):windowBGSlide(2),:);
                     ZSmean = mean(reshape(referencepopZS, numel(referencepopZS), 1));% * (1000/binSize);
                     ZSsd = std(reshape(referencepopZS, numel(referencepopZS), 1));% * (1000/binSize);
                     if ZSsd ~= 0 % Can't make a z score with a sd of 0, dummy
@@ -200,6 +203,17 @@ for i =  1:size(dataset1,1)
                     meanresponseZS = mean(psthSlideZS(windowResponseSlide(1):windowResponseSlide(2)));
                     responsiveZS = peakresponseZS > thresholdZS;
                     durationZS = sum(abs(psthSlideZS(windowResponseSlide(1):windowResponseSlide(2))) > thresholdZS);
+                    
+                    % outputter
+                    ZScount = ZScount + 1;
+                    ZSoutputter(ZScount, 1) = ZSmean;
+                    ZSoutputter(ZScount, 2) = ZSsd;
+                    ZSoutputter(ZScount, 3) = baselineHzM;
+                    ZSoutputter(ZScount, 4) = meanresponseZS;
+                    ZSoutputter(ZScount, 5) =  max(psthSlideZS(windowResponseSlide(1):windowResponseSlide(2)));
+                    
+                    EvokedOutputter (ZScount, 1) = max(psthBinSlideHzM);
+                    EvokedOutputter (ZScount, 2) = mean(psthBinSlideHzM(windowResponseSlide(1):windowResponseSlide(2)));
                     
                     % Add to population summary
                     psthSlideZS_population{populationcount,1} = [num2str(neuron.animalNum), '_', neuron.Date, '_', num2str(neuron.Depth)];
