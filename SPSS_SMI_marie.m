@@ -9,6 +9,9 @@
 % separately if included.
 
 ZScount = 0;
+ccount = 0;
+UnitID = 0;
+spsscount = 0;
 
 % Stimuli presented in different stimulus sets
 bbnAll = {'BBN_30'};
@@ -35,10 +38,13 @@ populationcount = 0;
 %% Find all tests and create spss output
 soundsAll = [bbnAll; toneAll; syllableAll; stringAll];
 clear output
+
+
 spssOutput{1, 1} = 'animalNum';
 spssOutput{1, 2} = 'Date';
 spssOutput{1, 3} = 'Depth';
 count = 4;
+
 for i = 1:length(soundsAll)
     spssOutput{1, count} = [soundsAll{i}, '_baselineHz'];
     spssOutput{1, count+1} = [soundsAll{i}, '_responsive_SMI'];
@@ -63,6 +69,7 @@ for i =  1:size(dataset1,1)
     spssOutput{i+1,1} = neuron.animalNum;
     spssOutput{i+1,2} = neuron.Date;
     spssOutput{i+1,3} = neuron.Depth;
+    UnitID = UnitID +1;
     
     % Find out which stimulus sets were presented to this neuron
     clear stimSets
@@ -118,7 +125,14 @@ for i =  1:size(dataset1,1)
                     [~, col] = find(isnan(psth));
                     psth(:, unique(col)) = [];
                     [bins, reps] = size(psth);
-                    if reps<10
+                    
+                    ccount = ccount+1;
+                    contentsOutputter{ccount, 1} = neuron.animalNum;
+                    contentsOutputter{ccount, 2} = neuron.Date;
+                    contentsOutputter{ccount, 3} = neuron.Depth;
+                    contentsOutputter{ccount, 4} = size(psth);
+                    
+                    if reps<30
                         continue
                     end
                     
@@ -132,8 +146,8 @@ for i =  1:size(dataset1,1)
                     
                     % mean values for psth with sliding window
                     psthBinSlideHzM = (mean(psthBinSlide, 2) / binSize) * 1000;
-                    bg = reshape(psth(windowBG(1):windowBG(2),:), 1, numel(psth(windowBG(1):windowBG(2),:)));
-                    baselineHzM = mean(bg) * 1000; %spikes/bin * bin/seconds = spikes/ second
+                    baselineHzM = mean(reshape(psthBinSlideHzM(windowBGSlide(1):windowBGSlide(2),:), numel(psthBinSlideHzM(windowBGSlide(1):windowBGSlide(2),:)), 1));
+                    baselineHzSD = std(reshape(psthBinSlideHzM(windowBGSlide(1):windowBGSlide(2),:), numel(psthBinSlideHzM(windowBGSlide(1):windowBGSlide(2),:)), 1));
                     populationcount = populationcount+1;
                     
                     %% SMI
@@ -162,7 +176,11 @@ for i =  1:size(dataset1,1)
                     meanslideSMI{populationcount, 2} = stim{iii};
                     
                     %% RMI
-                    psthSlideRMI = (psthBinSlideHzM-baselineHzM+0.01)/(psthBinSlideHzM+baselineHzM+0.01);
+                    if baselineHzM > 0
+                        psthSlideRMI = (psthBinSlideHzM-baselineHzM)/(psthBinSlideHzM+baselineHzM);
+                    else
+                        psthSlideRMI = nan(length(psthBinSlideHzM));
+                    end
                     
                     % response metrics
                     [peakresponseRMI, index] = max(abs(psthSlideRMI(windowResponseSlide(1):windowResponseSlide(2))));
@@ -189,12 +207,12 @@ for i =  1:size(dataset1,1)
                     %% Z score
                     %                     referencepopZS = psthBinSlideHzM; %(windowBGSlide(1):windowBGSlide(2),:);
                     referencepopZS = psthBinSlideHzM(windowBGSlide(1):windowBGSlide(2),:);
-                    ZSmean = mean(reshape(referencepopZS, numel(referencepopZS), 1));% * (1000/binSize);
-                    ZSsd = std(reshape(referencepopZS, numel(referencepopZS), 1));% * (1000/binSize);
-                    if ZSsd ~= 0 % Can't make a z score with a sd of 0, dummy
-                        psthSlideZS = (psthBinSlideHzM - ZSmean) / (ZSsd);
+                    baselineHzM = mean(reshape(referencepopZS, numel(referencepopZS), 1));% * (1000/binSize);
+                    baselineHzSD = std(reshape(referencepopZS, numel(referencepopZS), 1));% * (1000/binSize);
+                    if baselineHzSD ~= 0 % Can't make a z score with a sd of 0, dummy
+                        psthSlideZS = (psthBinSlideHzM - baselineHzM) / (baselineHzSD);
                     else
-                        psthSlideZS = zeros(size(psthBinSlideHzM));
+                        psthSlideZS = nan(size(psthBinSlideHzM));
                     end
                     % response metrics
                     [peakresponseZS, index] = max(abs(psthSlideZS(windowResponseSlide(1):windowResponseSlide(2))));
@@ -206,15 +224,12 @@ for i =  1:size(dataset1,1)
                     
                     % outputter
                     ZScount = ZScount + 1;
-                    ZSoutputter(ZScount, 1) = ZSmean;
-                    ZSoutputter(ZScount, 2) = ZSsd;
+                    ZSoutputter(ZScount, 1) = baselineHzM;
+                    ZSoutputter(ZScount, 2) = baselineHzSD;
                     ZSoutputter(ZScount, 3) = baselineHzM;
                     ZSoutputter(ZScount, 4) = meanresponseZS;
                     ZSoutputter(ZScount, 5) =  max(psthSlideZS(windowResponseSlide(1):windowResponseSlide(2)));
-                    
-                    EvokedOutputter (ZScount, 1) = max(psthBinSlideHzM);
-                    EvokedOutputter (ZScount, 2) = mean(psthBinSlideHzM(windowResponseSlide(1):windowResponseSlide(2)));
-                    
+
                     % Add to population summary
                     psthSlideZS_population{populationcount,1} = [num2str(neuron.animalNum), '_', neuron.Date, '_', num2str(neuron.Depth)];
                     psthSlideZS_population{populationcount,2} = baselineHzM;
@@ -229,18 +244,38 @@ for i =  1:size(dataset1,1)
                     meanslideZS{populationcount, 1} = meanresponseZS;
                     meanslideZS{populationcount, 2} = stim{iii};
                     
-                    %% Add data to spss output
-                    col = find(strcmp(soundsAll, stim{iii}));
-                    spssOutput{i+1, col*10 -9 +3} = baselineHzM;
-                    spssOutput{i+1, col*10 -8 +3} = responsiveSMI;
-                    spssOutput{i+1, col*10 -7 +3} = peakresponseSMI;
-                    spssOutput{i+1, col*10 -6 +3} = durationSMI;
-                    spssOutput{i+1, col*10 -5 +3} = responsiveRMI;
-                    spssOutput{i+1, col*10 -4 +3} = peakresponseRMI;
-                    spssOutput{i+1, col*10 -3 +3} = durationRMI;
-                    spssOutput{i+1, col*10 -2 +3} = responsiveZS;
-                    spssOutput{i+1, col*10 -1 +3} = peakresponseZS;
-                    spssOutput{i+1, col*10 -0 +3} = durationZS;
+                    for looper = windowResponseSlide(1):windowResponseSlide(2)
+                        spsscount = spsscount+1;
+                        smallSPSSoutput{spsscount, 1} = UnitID;
+                        smallSPSSoutput{spsscount, 2} = neuron.animalNum;
+                        smallSPSSoutput{spsscount, 3} = neuron.Date;
+                        smallSPSSoutput{spsscount, 4} = neuron.Depth;
+                        smallSPSSoutput{spsscount, 5} = stim{iii};
+                        smallSPSSoutput{spsscount, 6} = baselineHzM;
+                        smallSPSSoutput{spsscount, 7} = baselineHzSD;
+%                         smallSPSSoutput{spsscount, 8} = responsiveSMI;
+                        smallSPSSoutput{spsscount, 8} = psthSlideSMI(looper);
+%                         smallSPSSoutput{spsscount, 10} = durationSMI;
+%                         smallSPSSoutput{spsscount, 11} = responsiveRMI;
+                        smallSPSSoutput{spsscount, 9} = psthSlideRMI(looper);
+%                         smallSPSSoutput{spsscount, 13} = durationRMI;
+%                         smallSPSSoutput{spsscount, 14} = responsiveZS;
+                        smallSPSSoutput{spsscount, 10} = psthSlideZS(looper);
+%                         smallSPSSoutput{spsscount, 16} = durationZS;
+                        smallSPSSoutput{spsscount, 11} = reps;
+                    end
+%                     %% Add data to spss output'
+%                     col = find(strcmp(soundsAll, stim{iii}));
+%                     spssOutput{i+1, col*10 -9 +3} = baselineHzM;
+%                     spssOutput{i+1, col*10 -8 +3} = responsiveSMI;
+%                     spssOutput{i+1, col*10 -7 +3} = peakresponseSMI;
+%                     spssOutput{i+1, col*10 -6 +3} = durationSMI;
+%                     spssOutput{i+1, col*10 -5 +3} = responsiveRMI;
+%                     spssOutput{i+1, col*10 -4 +3} = peakresponseRMI;
+%                     spssOutput{i+1, col*10 -3 +3} = durationRMI;
+%                     spssOutput{i+1, col*10 -2 +3} = responsiveZS;
+%                     spssOutput{i+1, col*10 -1 +3} = peakresponseZS;
+%                     spssOutput{i+1, col*10 -0 +3} = durationZS;
                 end
                 
                 clear respons* psth *Hz* baseline* col nBinsOver duration* peak* psthBin*
@@ -251,6 +286,15 @@ end
 
 %% View what the population looks like
 figure; imagesc(cell2mat(psthSlideZS_population(:,4:end))); colorbar; title('Z score')
-figure; imagesc(cell2mat(psthSlideRMI_population(:,4:end))); colorbar; title('RMI')
+figure; imagesc(cell2mat(psthSlideRMI_population(:,4:end))); colorbar; title('RMI'); set(gca, 'clim', [-1 1]);
 figure; imagesc(cell2mat(psthSlideSMI_population(:,4:end))); colorbar; title('SMI')
+% clearvars -except small* ZSoutputter
+% unitID = cell2mat(smallSPSSoutput(:,1));
+% stim = smallSPSSoutput(:,5);
+% baselineHzM = cell2mat(smallSPSSoutput(:,6));
+% baselineHzSD = cell2mat(smallSPSSoutput(:,7));
+% reps = cell2mat(smallSPSSoutput(:,17));
+
+% xlswrite('spssOutputter.xlsx', smallSPSSoutput)
+
 

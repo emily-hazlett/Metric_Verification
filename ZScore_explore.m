@@ -1,16 +1,26 @@
 clearvars -except ZSo*
 
-Xdata = ZSoutputter(:,1) +0.01;
-Ydata = ZSoutputter(:,2)+0.01;
+% Xdata = log10(ZSoutputter(:,1));
+% Ydata = log10(ZSoutputter(:,2));
+Xdata = ZSoutputter(:,1);
+Ydata = ZSoutputter(:,2);
 Cdata = ZSoutputter(:,3);
 
 fittedX = linspace(min(Xdata), max(Xdata), 200);
+m = 0.4731;
+b = -0.0211;
 for i = 1:length(fittedX)
     % Coefficient values found using cftool on log transformed x and y data
-    % log10(y) log10(x) => f(x) = 0.4776x + 0.000364
-    % CI bounds 0.4634- 0.4917 and -0.008155-0.01003
+    % log10(y) log10(x) => f(x) = 0.4731x - 0.0211
+    % CI bounds (0.4587, 0.4874) and (-0.03039, -0.0118)
     % ignores Inf values
-    fittedY(i) = fittedX(i)^0.4776;% +1.519;
+    % Goodness of fit:
+    %   SSE: 14.92
+    %   R-square: 0.8328
+    %   Adjusted R-square: 0.8326
+    %   RMSE: 0.1334
+    
+    fittedY(i) = (10^b)*fittedX(i)^m;
 end
 
 figure;
@@ -21,9 +31,11 @@ ylabel('SD'); xlabel('Mean'); zlabel('Background Firing');
 colorbar
 set(gca, 'xscale', 'log'); set(gca, 'yscale', 'log');
 set(gca,'colorscale','log')
+set(gca, 'xlim', [0.1 50])
+set(gca, 'ylim', [0.1 9])
 title('relationship between SD and mean for maries data')
 plot(fittedX, fittedY, 'r', 'Linewidth', 2);
-legend('Data', '(f(x) =X^0^.^4^7^7^6', 'Location', 'SouthEast')
+legend('Data', '(f(x) = 10^-^0^.^0^2^1^1 * X^0^.^4^7^3^1', 'Location', 'SouthEast')
 
 
 subplot(1,2,2)
@@ -33,9 +45,11 @@ ylabel('SD'); xlabel('Mean'); zlabel('Background Firing');
 colorbar
 % set(gca, 'xscale', 'log'); set(gca, 'yscale', 'log');
 set(gca,'colorscale','log')
+set(gca, 'xlim', [-5 50])
+set(gca, 'ylim', [-1 9])
 title('relationship between SD and mean for maries data')
 plot(fittedX, fittedY, 'r', 'Linewidth', 2);
-legend('Data', '(f(x) = X^0^.^4^7^7^6', 'Location', 'SouthEast')
+legend('Data', '(f(x) = 10^-^0^.^0^2^1^1 * X^0^.^4^7^3^1', 'Location', 'SouthEast')
 
 
 % [coeffs, S] = polyfit(Xdata, Ydata, 2);

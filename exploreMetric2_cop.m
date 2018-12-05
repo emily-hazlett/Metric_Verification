@@ -2,7 +2,7 @@ clear all
 close all
 
 E = linspace(0.01, 100, 500);
-BG = linspace(0.01, 50, 300);
+BG = linspace(0.01, 100, 500);
 Cvector = 1:40;
 SMIlim = 0.05;
 
@@ -11,16 +11,21 @@ for i = 1:length(BG)
     RMI(:,i) = (E-BG(i))./(E+BG(i));
 end
 
-coeff = linspace(0.4634, 0.4917, length(Cvector));
+m = 0.4731;
+mrange = [0.4587, 0.4874];
+b = -0.0211;
+brange = [-0.03039, -0.0118];
+coeff1 = linspace(mrange(1), mrange(1), length(Cvector));
+coeff2 = linspace(brange(1), brange(1), length(Cvector));
 for CI = 1: length(Cvector)
     for i = 1:length(BG)
-        ZS(:,i,CI) = (E - BG(i))/ (BG(i)^coeff(CI));
+        ZS(:,i,CI) = (E - BG(i))/ (10^coeff2(CI) * BG(i)^coeff1(CI));
     end
 end
 
 for C = Cvector(1): Cvector(end)
     for i = 1:length(BG)
-        SMI(:,i,C) = log10((E+C)./(BG(i)+C));
+        SMI(:,i,C) = log((E+C)./(BG(i)+C));
     end
 end
 
@@ -37,7 +42,7 @@ for p = 1:6
     subplot(3, 4, plotcount)
     hold on
     surf(BG, E, SMI(:,:,Cvector(C)), 'EdgeColor', 'none'); view(2)
-    line(BG, (10^SMIlim).*BG + ((10^SMIlim)*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    line(BG, (exp(SMIlim)).*BG + ((exp(SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
     line(BG, (10^-SMIlim).*BG + ((10^-SMIlim)*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
     text(0.1, 50, 200, ['-- SMI = +-', num2str(SMIlim)])
     set(gca, 'xscale', 'log');
@@ -49,7 +54,7 @@ for p = 1:6
     subplot(3, 4, plotcount)
     hold on
     surf(BG, E, SMI(:,:,Cvector(C)), 'EdgeColor', 'none'); view(2)
-    line(BG, (10^SMIlim).*BG + ((10^SMIlim)*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    line(BG, (exp(SMIlim)).*BG + ((exp(SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
     line(BG, (10^-SMIlim).*BG + ((10^-SMIlim)*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
     text(10, 50, 200, ['-- SMI = +-', num2str(SMIlim)])
     xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title(['Linear view - SMI (C = ', num2str(C+Cvector(1)-1), ')'])
@@ -87,7 +92,7 @@ for C = 20% 1:5:length(Cvector)
     subplot(3, 2, 5)
     hold on
     surf(BG, E, SMI(:,:,Cvector(C)), 'EdgeColor', 'none'); view(2)
-    line(BG, (10^SMIlim).*BG + ((10^SMIlim)*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    line(BG, (exp(SMIlim)).*BG + ((exp(SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
     line(BG, (10^-SMIlim).*BG + ((10^-SMIlim)*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
     text(0.1, 50, 200, ['-- SMI = +-', num2str(SMIlim)])
     set(gca, 'xscale', 'log');
@@ -98,7 +103,7 @@ for C = 20% 1:5:length(Cvector)
     subplot(3, 2, 6)
     hold on
     surf(BG, E, SMI(:,:,Cvector(C)), 'EdgeColor', 'none'); view(2)
-    line(BG, (10^SMIlim).*BG + ((10^SMIlim)*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    line(BG, (exp(SMIlim)).*BG + ((exp(SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
     line(BG, (10^-SMIlim).*BG + ((10^-SMIlim)*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
     text(10, 50, 200, ['-- SMI = +-', num2str(SMIlim)])
     xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title(['Linear view - SMI (C = ', num2str(C+Cvector(1)-1), ')'])

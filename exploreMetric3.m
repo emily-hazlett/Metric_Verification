@@ -1,24 +1,112 @@
 clear all
-E = 0.1:0.1:100;
-BG = 0.1:0.1:50;
-for C = 1:40
-    for i = 1:length(BG)
-        SMI(:,i,C) = log10((E+C)./(BG(i)+C));      
-    end
-    figure (C)
-    imagesc('YData', E, 'XData', BG, 'CData', SMI(:,:,C))
-    set(gca, 'xscale', 'log')
-    axis('tight')
-    caxis([-1 1])
-    colormap('jet')
-    title(['SMI C = ', num2str(C)])
-    colorbar
+close all
+
+E = linspace(0.01, 100, 500);
+BG = linspace(0.01, 100, 500);
+Cvector = 1:40;
+SMIlim = 0.05;
+
+%% Calculate RMI and Z Score
+for i = 1:length(BG)
+    RMI(:,i) = (E-BG(i))./(E+BG(i));
 end
 
-% Zi = Xi - Xm/ S
-%     RMI(i,:) = (E-BG(i)+0.01)./(E+BG(i)+0.01);
+m = 0.4731;
+mrange = [0.4587, 0.4874];
+b = -0.0211;
+brange = [-0.03039, -0.0118];
+coeff1 = linspace(mrange(1), mrange(1), length(Cvector));
+coeff2 = linspace(brange(1), brange(1), length(Cvector));
+for CI = 1: length(Cvector)
+    for i = 1:length(BG)
+        ZS(:,i,CI) = (E - BG(i))/ (10^coeff2(CI) * BG(i)^coeff1(CI));
+    end
+end
 
-for i = 1:40
-    figure(i)
-    pause (0.5)
+for C = Cvector(1): Cvector(end)
+    for i = 1:length(BG)
+        SMI(:,i,C) = log((E+C)./(BG(i)+C));
+    end
+end
+
+%% Plot metric spaces
+
+figure(1)
+set(gcf, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1]);
+plotcount = 0;
+
+for p = 1:6
+    C = floor(length(Cvector)/6) *p - 5;
+    plotcount = plotcount + 1;
+    
+    subplot(3, 4, plotcount)
+    hold on
+    surf(BG, E, SMI(:,:,Cvector(C)), 'EdgeColor', 'none'); view(2)
+    line(BG, (exp(SMIlim)).*BG + ((exp(SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    line(BG, (exp(-SMIlim)).*BG + ((exp(-SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    text(0.1, 50, 200, ['-- SMI = +-', num2str(SMIlim)])
+    set(gca, 'xscale', 'log');
+    xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title(['Log view - SMI (C = ', num2str(C+Cvector(1)-1), ')'])
+    axis('tight'); colormap('jet'); colorbar; %caxis([-1 1]);
+    set(gca, 'ylim', [0 100])
+    
+    plotcount = plotcount + 1;
+    subplot(3, 4, plotcount)
+    hold on
+    surf(BG, E, SMI(:,:,Cvector(C)), 'EdgeColor', 'none'); view(2)
+    line(BG, (exp(SMIlim)).*BG + ((exp(SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    line(BG, (exp(-SMIlim)).*BG + ((exp(-SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    text(10, 50, 200, ['-- SMI = +-', num2str(SMIlim)])
+    xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title(['Linear view - SMI (C = ', num2str(C+Cvector(1)-1), ')'])
+    axis('tight'); colormap('jet'); colorbar; %caxis([-1 1]);
+    set(gca, 'ylim', [0 100])
+end
+
+
+for C = 20% 1:5:length(Cvector)
+    figure(C)
+    set(gcf, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1]);
+    
+    subplot(3, 2, 1)
+    surf(BG, E, RMI, 'EdgeColor', 'none'); view(2)
+    set(gca, 'xscale', 'log');
+    xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title('Log view - RMI')
+    axis('tight'); caxis([-1 1]); colormap('jet'); colorbar
+    
+    subplot(3, 2, 2)
+    surf(BG, E, RMI, 'EdgeColor', 'none'); view(2)
+    xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title('Linear view - RMI')
+    axis('tight'); caxis([-1 1]); colormap('jet'); colorbar
+    
+    subplot(3, 2, 3)
+    surf(BG, E, ZS(:,:,C), 'EdgeColor', 'none'); view(2)
+    set(gca, 'xscale', 'log');
+    xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title('Log view - Z-Score (M and SD modeled on Marie data)')
+    axis('tight'); colormap('jet'); colorbar; caxis([-100 100]);
+    
+    subplot(3, 2, 4)
+    surf(BG, E, ZS(:,:,C), 'EdgeColor', 'none'); view(2)
+    xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title('Linear view - Z-Score (M and SD modeled on Marie data)')
+    axis('tight'); colormap('jet'); colorbar; caxis([-10 10]);
+    
+    subplot(3, 2, 5)
+    hold on
+    surf(BG, E, SMI(:,:,Cvector(C)), 'EdgeColor', 'none'); view(2)
+    line(BG, (exp(SMIlim)).*BG + ((exp(SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    line(BG, (exp(-SMIlim)).*BG + ((exp(-SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    text(0.1, 50, 200, ['-- SMI = +-', num2str(SMIlim)])
+    set(gca, 'xscale', 'log');
+    xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title(['Log view - SMI (C = ', num2str(C+Cvector(1)-1), ')'])
+    axis('tight'); colormap('jet'); colorbar; %caxis([-1 1]);
+    set(gca, 'ylim', [0 100])
+    
+    subplot(3, 2, 6)
+    hold on
+    surf(BG, E, SMI(:,:,Cvector(C)), 'EdgeColor', 'none'); view(2)
+    line(BG, (exp(SMIlim)).*BG + ((exp(SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    line(BG, (exp(-SMIlim)).*BG + ((exp(-SMIlim))*Cvector(C)-Cvector(C)), repmat(200, 1, length(BG)), 'linewidth', 2)
+    text(10, 50, 200, ['-- SMI = +-', num2str(SMIlim)])
+    xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title(['Linear view - SMI (C = ', num2str(C+Cvector(1)-1), ')'])
+    axis('tight'); colormap('jet'); colorbar; %caxis([-1 1]);
+    set(gca, 'ylim', [0 100])
 end
