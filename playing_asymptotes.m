@@ -45,6 +45,107 @@
 % set(gca, 'xscale', 'log')
 
 %%
+% Emax = 80;
+% Estep = 5000;
+% E = linspace(0, Emax, Estep);
+% BG = linspace(0, Emax, Estep);
+% C = [1, exp(1), 5, 10, 20];
+%
+%
+% close all
+% figure(4)
+% colorcount = 0;
+% colorline = {'b', 'g', 'r', 'k', 'y'};
+%
+% for i = C
+%     colorcount = colorcount + 1;
+%     for ii = [1 10 100 200 400]
+%         SMI = log((E+i)./(BG(ii)+i));
+%
+%         subplot(5, 2, 1)
+%         hold on
+%         scatter(BG(ii), 0, 'k', 'filled')
+%         plot(E, SMI, colorline{colorcount})
+%         xlabel('Evoked'); ylabel('SMI')
+%         %         set(gca, 'xscale', 'log')
+%
+%         subplot(5, 2, 2)
+%         hold on
+%         scatter(BG(ii), 0, 'k', 'filled')
+%         plot(E, SMI, colorline{colorcount})
+%         xlabel('Evoked'); ylabel('SMI')
+%         set(gca, 'xscale', 'log')
+%
+%         subplot(5, 2, 3)
+%         hold on
+%         plot(E(:, 2:end), ...
+%             diff(SMI)/(Emax/Estep), ...
+%             colorline{colorcount})
+%         xlabel('Evoked'); ylabel('Slope')
+%         %         set(gca, 'xscale', 'log')
+%
+%         subplot(5, 2, 4)
+%         hold on
+%         plot(E(:, 2:end), ...
+%             diff(SMI)/(Emax/Estep), ...
+%             colorline{colorcount})
+%         xlabel('Evoked'); ylabel('Slope')
+%         set(gca, 'xscale', 'log')
+%         set(gca, 'yscale', 'log')
+%
+%         subplot(5, 2, 5)
+%         hold on
+%         plot(E(:, 3:end), ...
+%             diff(SMI,2)/(Emax/Estep), ...
+%             colorline{colorcount}, 'linewidth', 6-colorcount)
+%         xlabel('Evoked'); ylabel('Slope of slope')
+%         %         set(gca, 'xscale', 'log')
+%
+%         subplot(5, 2, 6)
+%         hold on
+%         plot(E(:, 3:end), ...
+%             diff(SMI,2)/(Emax/Estep), ...
+%             colorline{colorcount}, 'linewidth', 6-colorcount)
+%         xlabel('Evoked'); ylabel('Slope of slope')
+%         set(gca, 'xscale', 'log')
+%         set(gca, 'yscale', 'log')
+%
+%         subplot(5, 2, 7)
+%         hold on
+%         plot(E(:, 4:end), ...
+%             diff(SMI,3)/(Emax/Estep), ...
+%             colorline{colorcount}, 'linewidth', 6-colorcount)
+%         xlabel('Evoked'); ylabel('Slope of slope of slope')
+%         %         set(gca, 'xscale', 'log')
+%
+%         subplot(5, 2, 8)
+%         hold on
+%         plot(E(:, 4:end), ...
+%             diff(SMI,3)/(Emax/Estep), ...
+%             colorline{colorcount}, 'linewidth', 6-colorcount)
+%         xlabel('Evoked'); ylabel('Slope of slope of slope')
+%         set(gca, 'xscale', 'log')
+%         set(gca, 'yscale', 'log')
+%
+%         subplot(5, 2, 9)
+%         hold on
+%         plot(E(:, 5:end), ...
+%             diff(SMI,4)/(Emax/Estep), ...
+%             colorline{colorcount}, 'linewidth', 6-colorcount)
+%         xlabel('Evoked'); ylabel('Slope of slope of slope of slope')
+%         %         set(gca, 'xscale', 'log')
+%
+%         subplot(5, 2, 10)
+%         hold on
+%         plot(E(:, 5:end), ...
+%             diff(SMI,4)/(Emax/Estep), ...
+%             colorline{colorcount}, 'linewidth', 6-colorcount)
+%         xlabel('Evoked'); ylabel('Slope of slope of slope of slope')
+%         set(gca, 'xscale', 'log')
+%         set(gca, 'yscale', 'log')
+%     end
+% end
+
 Emax = 80;
 Estep = 5000;
 E = linspace(0, Emax, Estep);
@@ -57,92 +158,20 @@ figure(4)
 colorcount = 0;
 colorline = {'b', 'g', 'r', 'k', 'y'};
 
-for i = C
+for i = 20
     colorcount = colorcount + 1;
     for ii = [1 10 100 200 400]
-        SMI = log((E+i)./(BG(ii)+i));
+        SMI_e = log((E+i)./(BG(ii)+i));
+        SMI_10 = log10((E+i)./(BG(ii)+i));
+        SMI_2 = log2((E+i)./(BG(ii)+i));
         
-        subplot(5, 2, 1)
+        figure(1)
         hold on
-        scatter(BG(ii), 0, 'k', 'filled')
-        plot(E, SMI, colorline{colorcount})
+        plot(E, SMI_e, 'k')
+        plot(E, SMI_2, 'b')
+        plot(E, SMI_10, 'r')
         xlabel('Evoked'); ylabel('SMI')
         %         set(gca, 'xscale', 'log')
         
-        subplot(5, 2, 2)
-        hold on
-        scatter(BG(ii), 0, 'k', 'filled')
-        plot(E, SMI, colorline{colorcount})
-        xlabel('Evoked'); ylabel('SMI')
-        set(gca, 'xscale', 'log')
-        
-        subplot(5, 2, 3)
-        hold on
-        plot(E(:, 2:end), ...
-            diff(SMI)/(Emax/Estep), ...
-            colorline{colorcount})
-        xlabel('Evoked'); ylabel('Slope')
-        %         set(gca, 'xscale', 'log')
-        
-        subplot(5, 2, 4)
-        hold on
-        plot(E(:, 2:end), ...
-            diff(SMI)/(Emax/Estep), ...
-            colorline{colorcount})
-        xlabel('Evoked'); ylabel('Slope')
-        set(gca, 'xscale', 'log')
-        set(gca, 'yscale', 'log')
-        
-        subplot(5, 2, 5)
-        hold on
-        plot(E(:, 3:end), ...
-            diff(SMI,2)/(Emax/Estep), ...
-            colorline{colorcount}, 'linewidth', 6-colorcount)
-        xlabel('Evoked'); ylabel('Slope of slope')
-        %         set(gca, 'xscale', 'log')
-        
-        subplot(5, 2, 6)
-        hold on
-        plot(E(:, 3:end), ...
-            diff(SMI,2)/(Emax/Estep), ...
-            colorline{colorcount}, 'linewidth', 6-colorcount)
-        xlabel('Evoked'); ylabel('Slope of slope')
-        set(gca, 'xscale', 'log')
-        set(gca, 'yscale', 'log')
-        
-        subplot(5, 2, 7)
-        hold on
-        plot(E(:, 4:end), ...
-            diff(SMI,3)/(Emax/Estep), ...
-            colorline{colorcount}, 'linewidth', 6-colorcount)
-        xlabel('Evoked'); ylabel('Slope of slope of slope')
-        %         set(gca, 'xscale', 'log')
-        
-        subplot(5, 2, 8)
-        hold on
-        plot(E(:, 4:end), ...
-            diff(SMI,3)/(Emax/Estep), ...
-            colorline{colorcount}, 'linewidth', 6-colorcount)
-        xlabel('Evoked'); ylabel('Slope of slope of slope')
-        set(gca, 'xscale', 'log')
-        set(gca, 'yscale', 'log')
-        
-        subplot(5, 2, 9)
-        hold on
-        plot(E(:, 5:end), ...
-            diff(SMI,4)/(Emax/Estep), ...
-            colorline{colorcount}, 'linewidth', 6-colorcount)
-        xlabel('Evoked'); ylabel('Slope of slope of slope of slope')
-        %         set(gca, 'xscale', 'log')
-        
-        subplot(5, 2, 10)
-        hold on
-        plot(E(:, 5:end), ...
-            diff(SMI,4)/(Emax/Estep), ...
-            colorline{colorcount}, 'linewidth', 6-colorcount)
-        xlabel('Evoked'); ylabel('Slope of slope of slope of slope')
-        set(gca, 'xscale', 'log')
-        set(gca, 'yscale', 'log')
     end
 end
-

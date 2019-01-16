@@ -11,16 +11,20 @@ for i = 1:length(BG)
     RMI(:,i) = (E-BG(i))./(E+BG(i));
 end
 
-m = 0.4731;
-mrange = [0.4587, 0.4874];
-b = -0.0211;
-brange = [-0.03039, -0.0118];
-coeff1 = linspace(mrange(1), mrange(1), length(Cvector));
-coeff2 = linspace(brange(1), brange(1), length(Cvector));
-for CI = 1: length(Cvector)
-    for i = 1:length(BG)
-        ZS(:,i,CI) = (E - BG(i))/ (10^coeff2(CI) * BG(i)^coeff1(CI));
-    end
+% m = 0.4731;
+% mrange = [0.4587, 0.4874];
+% b = -0.0211;
+% brange = [-0.03039, -0.0118];
+% coeff1 = linspace(mrange(1), mrange(1), length(Cvector));
+% coeff2 = linspace(brange(1), brange(1), length(Cvector));
+% for CI = 1: length(Cvector)
+%     for i = 1:length(BG)
+%         ZS(:,i,CI) = (E - BG(i))/ (10^coeff2(CI) * BG(i)^coeff1(CI));
+%     end
+% end
+
+for i = 1:length(BG)
+    ZS(:,i) = (E - BG(i))/ sqrt(BG(i));
 end
 
 for C = Cvector(1): Cvector(end)
@@ -63,7 +67,7 @@ for p = 1:6
 end
 
 
-for C = 20% 1:5:length(Cvector)
+for C = 11% 1:5:length(Cvector)
     figure(C)
     set(gcf, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1]);
     
@@ -79,7 +83,7 @@ for C = 20% 1:5:length(Cvector)
     axis('tight'); caxis([-1 1]); colormap('jet'); colorbar
     
     subplot(3, 2, 3)
-    surf(BG, E, ZS(:,:,C), 'EdgeColor', 'none'); view(2)
+    surf(BG, E, ZS(:,:), 'EdgeColor', 'none'); view(2)
     set(gca, 'xscale', 'log');
     xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); title('Log view - Z-Score (M and SD modeled on Marie data)')
     axis('tight'); colormap('jet'); colorbar; caxis([-100 100]);
