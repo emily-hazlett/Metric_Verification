@@ -26,13 +26,13 @@ end
 C = round(BGmin/(percBGexc-1));
 C = 8;
 for i = 1:length(BG)
-    SMI(:,i) = log10((E+C)./(BG(i)+C));
+    SMI(:,i) = (log10((E+C)./(BG(i)+C)))/0.2068;
 end
 
 %% Plot metric spaces
 
 figure(1)
-set(gcf, 'Units', 'Normalized', 'OuterPosition', [0 0 0.5 1]);
+set(gcf, 'Units', 'Normalized', 'OuterPosition', [0 0 0.5 0.8]);
 
 % RS
 subplot(4, 3, 1)
@@ -64,7 +64,7 @@ xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); ti
 caxis([-2 2]); colormap('jet'); colorbar
 set(gca, 'ylim', [0.01 100]); set(gca, 'xlim', [0.01 100])
 
-%RMI
+% RMI
 subplot(4, 3, 4)
 hold on
 surf(BG, E, RMI, 'EdgeColor', 'none'); view(2)
@@ -94,7 +94,7 @@ xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); ti
 caxis([-1 1]); colormap('jet'); colorbar
 set(gca, 'ylim', [0.01 100]); set(gca, 'xlim', [0.01 100])
 
-%Z-score
+% Z-score
 subplot(4, 3, 7)
 hold on
 surf(BG, E, ZS(:,:), 'EdgeColor', 'none'); view(2)
@@ -124,7 +124,7 @@ xlabel('Background Firing'); ylabel('Evoked Firing'); zlabel('Metric Value'); ti
 colormap('jet'); colorbar; caxis([-10 10]);
 set(gca, 'ylim', [0.01 100]); set(gca, 'xlim', [0.01 100])
 
-%SMI
+% SMI
 subplot(4, 3, 10)
 hold on
 surf(BG, E, SMI(:,:), 'EdgeColor', 'none'); view(2)

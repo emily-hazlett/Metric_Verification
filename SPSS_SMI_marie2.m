@@ -71,12 +71,14 @@ for i =  1:size(dataset1,1)
                 case 2
                     stim = toneAll;
                     soundCat = 'Tones';
+                    continue
                 case 3
                     stim = syllableAll;
                     soundCat = 'Vocal';
                 case 4
                     stim = stringAll;
                     soundCat = 'Vocal';
+                    continue
             end
             
             %% Batch through all stim at 80 dB SPL in this stimulus set

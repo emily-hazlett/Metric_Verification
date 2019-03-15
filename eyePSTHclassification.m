@@ -15,7 +15,7 @@ orderIndex = orderIndex(randperm(length(orderIndex)));
 results = zeros(1,length(orderIndex));
 
 % Identify the total dataset
-dataset1 = dir('E:\Marie data\database\*.mat'); % Find the list of neurons to batch through
+dataset1 = dir('C:\Metric Verification\Marie data\database\*.mat'); % Find the list of neurons to batch through
 dataset1(end) = []; % Drop the reference matrix
 plots = figure('units','normalized','outerposition',[0 0 1 1]);
 
@@ -28,7 +28,14 @@ definput = {'1'};
 %% Batch
 for i =  1:length(datasetTests.nReps)
     clear psth* selectTest neuron answer
+    
+    if any(eq(skippers, orderIndex(i))) == 1
+        continue
+    end
+        
+    
     % Find animal and depth, then load neuron
+    p = 601;
     selectTest.animalnum = datasetTests.animalnum(orderIndex(i));
     selectTest.depth = datasetTests.depth(orderIndex(i));
     
@@ -36,12 +43,12 @@ for i =  1:length(datasetTests.nReps)
     fileList = fileList(1,:);
     fileSelect = contains(fileList, num2str(selectTest.animalnum)) & contains(fileList, num2str(selectTest.depth));
     
-    load(['E:\Marie data\database\', dataset1(find(fileSelect)).name])
+    load(['C:\Metric Verification\Marie data\database\', dataset1(find(fileSelect)).name])
     
     % Find stimulus for selected test
     selectTest.stim = datasetTests.stimulus{orderIndex(i)}(:,:);
     
-    if contains(selectTest.stim, 'BBN30')
+    if contains(selectTest.stim, 'BBN_30')
         selectTest.soundCat = 'BBN';
     else
         selectTest.soundCat = 'Vocal';
